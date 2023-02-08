@@ -5,21 +5,38 @@
  * board fills (tie)
  */
 
+const scores = document.getElementById('scores')
+const versus = document.getElementById('versus')
+
+
+class Player{
+  constructor(color) {
+    this.color = color
+  }
+}
+
 class Game{
-  constructor(width,height) {
+  constructor(width,height,...players) {
     this.width = width;
     this.height = height;
-    this.currPlayer = 1;
+    this.players = [...players]
+    this.currPlayer = this.players[0];
     this.board = [];
     this.makeBoard();
     this.makeHtmlBoard();
     this.gameOver = false;
     let formSubmit = document.getElementById('formSubmit');
     formSubmit.addEventListener('click', this.restartGame);
+    this.props = {
+      player1wins: 0,
+      player2wins: 0
+    }
+    versus.innerHTML = `${this.players[0].color.toUpperCase()} versus ${this.players[1].color.toUpperCase()}`
   }
 
   restartGame = (e) => {
     e.preventDefault();
+    
     let spots = document.querySelectorAll('#board tr td')
     for (let item of spots) {
       if (item.firstChild) item.removeChild(item.firstChild);
@@ -85,7 +102,8 @@ class Game{
   placeInTable(y, x) {
     const piece = document.createElement('div');
     piece.classList.add('piece');
-    piece.classList.add(`p${this.currPlayer}`);
+    // piece.classList.add(this.currPlayer.color);
+    piece.style.backgroundColor = this.currPlayer.color
     piece.style.top = -50 * (y + 2);
 
     const spot = document.getElementById(`${y}-${x}`);
@@ -95,7 +113,7 @@ class Game{
   /** endGame: announce game end */
   endGame(msg) {
     this.gameOver = true;
-    alert(msg);
+    setTimeout(function(){alert(msg)},100)
   }
 
   /** handleClick: handle click of column top to play piece */
@@ -117,7 +135,10 @@ class Game{
     
     // check for win
     if (this.checkForWin()) {
-      return this.endGame(`Player ${this.currPlayer} won!`);
+      if(this.currPlayer == this.players[0]) this.props.player1wins += 1;
+      else this.props.player2wins +=1;
+      scores.innerHTML = `<div>Player 1 (${this.players[0].color})  Total Wins: ${this.props.player1wins} </div><div>Player 2 (${this.players[1].color}) Total Wins: ${this.props.player2wins} </div>`
+      return this.endGame(`Player ${this.currPlayer.color} won!`);
     }
     
     // check for tie
@@ -126,7 +147,7 @@ class Game{
     }
       
     // switch players
-    this.currPlayer = this.currPlayer === 1 ? 2 : 1;
+    this.currPlayer = this.currPlayer === this.players[0] ? this.players[1] : this.players[0];
   }
 
   /** checkForWin: check board cell-by-cell for "does a win start here?" */
@@ -166,7 +187,53 @@ class Game{
   
 }
 
-new Game(6,7);
+const isColor = (strColor) => {
+  const s = new Option().style;
+  s.color = strColor;
+  return s.color == strColor.toLowerCase();
+}
+
+function submitter (e) {
+  e.preventDefault();
+  let p1 = document.getElementById('player1')
+  let p2 = document.getElementById('player2')
+  let player1 = new Player(p1.value)
+  let player2 = new Player(p2.value)
+  if (!(isColor(player1.color)) || !(isColor(player2.color))) {
+    alert('Please enter 2 new valid colors to change colors.')
+    if(!(isColor(player1.color))) {
+      p1.value = ''
+    }
+    if(!(isColor(player2.color))) {
+      p2.value = ''
+    }
+  }
+  else if (player1.color !== '' && player2.color !=='' && player1.color == player2.color) {
+    alert('Players cannot choose the same colors.')
+    p1.value = ''
+    p2.value = ''
+  }
+  else if (player1.color !== '' && player2.color !=='') {
+    const board = document.getElementById('board')
+    board.innerHTML = ''
+    new Game (6,7,player1,player2)
+    p1.value = ''
+    p2.value = ''
+  }
+  
+}
+
+
+
+let sub = document.getElementById('formSubmit');
+sub.addEventListener('click', submitter)
+// sub.addEventListener('change', function(e) {
+//   e.preventDefault();
+//   sub.addEventListener('click', submitter)
+// })
+
+
+// new Game(6,7,p1,p2);
 
 // const WIDTH = 7;
 // const HEIGHT = 6;
