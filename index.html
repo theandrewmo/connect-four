@@ -12,12 +12,22 @@
   <input type="text" name="player2" id="player2" placeholder="Choose color">
   <input type="submit" name="formSubmit" id="formSubmit" value="Start New Game">
 </form>
+<form action='' id="secret" class="secret"> 
+  <label for="boardRows">Enter desired rows:</label>
+  <input type="text" name="boardRows" id="boardRows">
+  <label for="boardCols">Enter desired columns:</label>
+  <input type="text" name="boardCols" id="boardCols">
+  <input type="submit" name="boardSize" id="boardSize" value="Set board size">
+</form>
 <h1 id="versus"></h1>
 <div id="game">
   <table id="board"></table>
 </div>
-<div id="scores"></div>
-
+<hr>
+<div>Player 1 Total Wins: <span id="p1score">0</span></div>
+<div>Player 2 Total Wins: <span id="p2score">0</span></div>
+<hr>
+<div>*****  Bonus:  Get 3 total wins to reveal hidden feature! *****</div>
 <script src="connect4.js"></script>
 
 </body>

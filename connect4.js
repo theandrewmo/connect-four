@@ -5,9 +5,29 @@
  * board fills (tie)
  */
 
-const scores = document.getElementById('scores')
+// const scores = document.getElementById('scores')
+const p1score = document.getElementById('p1score')
+const p2score = document.getElementById('p2score')
 const versus = document.getElementById('versus')
+const boardRows = document.getElementById('boardRows')
+const boardCols = document.getElementById('boardCols')
+const boardSize = document.getElementById('boardSize')
+const sub = document.getElementById('formSubmit');
+const board = document.getElementById('board')
+const secret = document.getElementById('secret')
 
+
+sub.addEventListener('click', submitter)
+boardSize.addEventListener('click', changeSize)
+
+// using global object to track total scores for session regardless of color of piece
+const obj = {
+    player1wins: 0,
+    player2wins: 0,
+    gameOn: false,
+    rows: 6,
+    cols: 7
+}
 
 class Player{
   constructor(color) {
@@ -25,28 +45,28 @@ class Game{
     this.makeBoard();
     this.makeHtmlBoard();
     this.gameOver = false;
-    let formSubmit = document.getElementById('formSubmit');
-    formSubmit.addEventListener('click', this.restartGame);
-    this.props = {
-      player1wins: 0,
-      player2wins: 0
-    }
-    versus.innerHTML = `${this.players[0].color.toUpperCase()} versus ${this.players[1].color.toUpperCase()}`
+    // sub.addEventListener('click', this.restartGame);
+    // possible use to keep track of score for each instance
+    // this.props = {
+    //   player1wins: 0,
+    //   player2wins: 0
+    // }
+    versus.innerHTML = `${this.players[0].color} versus ${this.players[1].color}`
   }
 
-  restartGame = (e) => {
-    e.preventDefault();
+  // restartGame = (e) => {
+  //   e.preventDefault();
     
-    let spots = document.querySelectorAll('#board tr td')
-    for (let item of spots) {
-      if (item.firstChild) item.removeChild(item.firstChild);
-    }
-    this.board.forEach(el => {
-      for (let i = 0; i<el.length; i++)
-       el[i] = undefined;
-    })
-    this.gameOver = false;
-  }
+  //   let spots = document.querySelectorAll('#board tr td')
+  //   for (let item of spots) {
+  //     if (item.firstChild) item.removeChild(item.firstChild);
+  //   }
+  //   this.board.forEach(el => {
+  //     for (let i = 0; i<el.length; i++)
+  //      el[i] = undefined;
+  //   })
+  //   this.gameOver = false;
+  // }
 
   /** makeBoard: create in-JS board structure:*/
 
@@ -59,8 +79,6 @@ class Game{
   /** makeHtmlBoard: make HTML table and row of column tops. */
 
   makeHtmlBoard() {
-    const board = document.getElementById('board');
-  
     // make column tops (clickable area for adding a piece to that column)
     const top = document.createElement('tr');
     top.setAttribute('id', 'column-top');
@@ -135,10 +153,20 @@ class Game{
     
     // check for win
     if (this.checkForWin()) {
-      if(this.currPlayer == this.players[0]) this.props.player1wins += 1;
-      else this.props.player2wins +=1;
-      scores.innerHTML = `<div>Player 1 (${this.players[0].color})  Total Wins: ${this.props.player1wins} </div><div>Player 2 (${this.players[1].color}) Total Wins: ${this.props.player2wins} </div>`
-      return this.endGame(`Player ${this.currPlayer.color} won!`);
+      if(this.currPlayer == this.players[0]) {
+        // this.props.player1wins += 1;
+        obj.player1wins +=1;
+      } 
+      else {
+        // this.props.player2wins +=1;
+        obj.player2wins +=1;
+      }
+      p1score.innerHTML =  obj.player1wins;
+      p2score.innerHTML =  obj.player2wins;
+      if(obj.player1wins > 2 || obj.player2wins > 2){
+        secret.classList.remove('secret')
+      }
+      return this.endGame(`${this.currPlayer.color} wins!`);
     }
     
     // check for tie
@@ -193,44 +221,99 @@ const isColor = (strColor) => {
   return s.color == strColor.toLowerCase();
 }
 
+const p1 = document.getElementById('player1')
+const p2 = document.getElementById('player2')
+let player1 = null 
+let player2 = null 
+
 function submitter (e) {
   e.preventDefault();
-  let p1 = document.getElementById('player1')
-  let p2 = document.getElementById('player2')
-  let player1 = new Player(p1.value)
-  let player2 = new Player(p2.value)
-  if (!(isColor(player1.color)) || !(isColor(player2.color))) {
-    alert('Please enter 2 new valid colors to change colors.')
-    if(!(isColor(player1.color))) {
+  if(!obj.gameOn) {
+    if (p1.value == '' || p2.value == '')  {
+      alert('Please choose two different colors to start game')
+      return
+    }
+    else if( !(isColor(p1.value)) || !(isColor(p2.value))  )  {
+      alert('Invalid color detected. Please choose valid colors')
+        if(!(isColor(p1.value))) {
+          p1.value = ''
+        }
+        if(!(isColor(p2.value))) {
+          p2.value = ''
+        }
+        return
+    }
+    else if(isColor(p1.value) && p1.value !== '' && isColor(p2.value) && p2.value !== '') {
+      if(p1.value == p2.value) {
+        alert('Colors can not be same')
+        p1.value = ''
+        p2.value = ''
+        return
+      }
+      obj.gameOn = true;
+      player1 = new Player(p1.value);
+      player2 = new Player(p2.value);
       p1.value = ''
-    }
-    if(!(isColor(player2.color))) {
       p2.value = ''
+      startNewGame()
+      return
     }
   }
-  else if (player1.color !== '' && player2.color !=='' && player1.color == player2.color) {
-    alert('Players cannot choose the same colors.')
-    p1.value = ''
-    p2.value = ''
-  }
-  else if (player1.color !== '' && player2.color !=='') {
-    const board = document.getElementById('board')
-    board.innerHTML = ''
-    new Game (6,7,player1,player2)
-    p1.value = ''
-    p2.value = ''
+  else {
+    if(p1.value == '' && p2.value == '') {
+      startNewGame();
+      return
+    }
+    else {
+          if(p1.value !== '' && p1.value !== player1.color && p1.value !==player1.color && isColor(p1.value)) {
+            player1.color = p1.value
+            p1.value = ''
+          }
+          if(p2.value !== '' && p2.value !== player2.color && p2.value !==player1.color && isColor(p2.value)) {
+            player2.color = p2.value
+            p2.value = ''
+          }
+    }
+    if(!(isColor(p1.value)) || !(isColor(p2.value))  )  {
+      alert('Invalid color detected. Please choose valid colors')
+        if(!(isColor(p1.value))) {
+          p1.value = ''
+        }
+        if(!(isColor(p2.value))) {
+          p2.value = ''
+        }
+        return
+    }
+    if(isColor(p1.value) && p1.value !== '' && isColor(p2.value) && p2.value !== '') {
+      if(p1.value == p2.value) {
+        alert('Colors can not be same')
+        p1.value = ''
+        p2.value = ''
+        return
+      }
+     startNewGame();
+    }
+    startNewGame();
   }
   
+  function startNewGame() {
+      board.innerHTML = ''
+      new Game(obj.rows,obj.cols,player1,player2)
+  }
 }
 
-
-
-let sub = document.getElementById('formSubmit');
-sub.addEventListener('click', submitter)
-// sub.addEventListener('change', function(e) {
-//   e.preventDefault();
-//   sub.addEventListener('click', submitter)
-// })
+function changeSize(evt) {
+    evt.preventDefault();
+    if(boardRows.value >=4 && boardCols.value >=4 && player1 && player2) {
+      board.innerHTML = ''
+      obj.rows = boardRows.value;
+      obj.cols = boardCols.value;
+      new Game (obj.rows, obj.cols, player1, player2)
+    }
+    else {
+      alert("Board rows and columns must be at least 4 units in length")
+    }
+  }
 
 
 // new Game(6,7,p1,p2);

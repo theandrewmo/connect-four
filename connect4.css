@@ -26,9 +26,22 @@
 /* column-top is table row of clickable areas for each column */
 
 #column-top td {
-  border: dashed 1px lightgray;
+  border: dashed 1px rgb(42, 64, 161);
 }
 
 #column-top td:hover {
-  background-color: gold;
+  background-color: rgb(202, 177, 36);
+}
+
+.secret {
+  opacity: 0;
+}
+
+body {
+  background-color: rgb(240, 241, 240);
+  text-align: center;
+}
+
+#board {
+  margin: auto;
 }
