@@ -298,7 +298,7 @@ function submitter (e) {
   
   function startNewGame() {
       board.innerHTML = ''
-      new Game(obj.rows,obj.cols,player1,player2)
+      new Game(obj.cols,obj.rows,player1,player2)
   }
 }
 
@@ -308,7 +308,7 @@ function changeSize(evt) {
       board.innerHTML = ''
       obj.rows = boardRows.value;
       obj.cols = boardCols.value;
-      new Game (obj.rows, obj.cols, player1, player2)
+      new Game (obj.cols, obj.rows, player1, player2)
     }
     else {
       alert("Board rows and columns must be at least 4 units in length")
